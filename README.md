@@ -66,6 +66,7 @@ Run the installation script to automatically configure the launchd agent:
 ```
 
 This script will:
+
 - Generate the plist file with the correct paths for your system
 - Copy it to `~/Library/LaunchAgents/`
 - Load the service automatically
@@ -73,26 +74,31 @@ This script will:
 #### Useful commands:
 
 View logs:
+
 ```bash
 tail -f /tmp/calendar_zoom_launcher.log
 ```
 
 View errors:
+
 ```bash
 tail -f /tmp/calendar_zoom_launcher_error.log
 ```
 
 Check if service is running:
+
 ```bash
 launchctl list | grep calendar.zoom
 ```
 
 Stop the automation:
+
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.calendar.zoom.launcher.plist
 ```
 
 Restart after code changes:
+
 ```bash
 ./install.sh
 ```
