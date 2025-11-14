@@ -23,5 +23,4 @@ else
 fi
 
 # Run the Python script
-# Filter out asdf warning notices from stderr while keeping actual errors
-exec "$PYTHON" "$SCRIPT_DIR/calendar_zoom_launcher.py" 2> >(grep -v "NOTICE:\|asdf 0.16.0\|Migration guide\|asdf website\|Source code:" >&2)
+exec "$PYTHON" "$SCRIPT_DIR/calendar_zoom_launcher.py"
