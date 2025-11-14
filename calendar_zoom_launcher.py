@@ -124,7 +124,7 @@ def main():
 
     now = datetime.utcnow()
     time_min = (now - timedelta(minutes=5)).isoformat() + 'Z'
-    time_max = (now + timedelta(minutes=5)).isoformat() + 'Z'
+    time_max = (now + timedelta(minutes=2)).isoformat() + 'Z'
 
     events_result = service.events().list(
         calendarId='primary',
@@ -137,7 +137,7 @@ def main():
     events = events_result.get('items', [])
 
     if not events:
-        log("No events in the window (5 min ago to 5 min ahead)")
+        log("No events in the window (5 min ago to 2 min ahead)")
         return
 
     opened_meetings = load_opened_meetings()

@@ -1,6 +1,6 @@
 # Google Calendar Zoom Launcher Setup
 
-This script automatically checks your Google Calendar every few minutes and opens Zoom links for meetings starting in the next 5 minutes.
+This script automatically checks your Google Calendar every few minutes and opens Zoom links for meetings starting in the next 2 minutes.
 
 ## Prerequisites
 
@@ -143,7 +143,7 @@ Restart after code changes:
 1. Every 2 minutes, the script checks your primary Google Calendar
 2. It looks for events that:
    - Started within the last 5 minutes, OR
-   - Will start in the next 5 minutes
+   - Will start in the next 2 minutes
 3. For each event, it checks:
    - Does the event have attendees? (Skips personal events with no attendees)
    - Have you accepted the invitation? (Only opens if your response status is "accepted")
