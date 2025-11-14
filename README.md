@@ -4,18 +4,53 @@ This script automatically checks your Google Calendar every few minutes and open
 
 ## Prerequisites
 
-- Python 3.7 or higher
+- Python 3.10
 - A Google account with Google Calendar
 
 ## Setup Instructions
 
-### 1. Install Python Dependencies
+### 1. Install Python (if not already installed)
+
+This project requires Python 3.10.
+
+```bash
+# Install asdf if you don't have it
+brew install asdf
+
+# Add asdf to your shell (add to ~/.zshrc or ~/.bashrc)
+echo 'source /opt/homebrew/opt/asdf/libexec/asdf.sh' >> ~/.zshrc
+
+# Restart your shell, then install Python plugin
+asdf plugin add python
+
+# Install Python 3.10.0
+asdf install python 3.10.0
+
+# Set it as your global default (optional)
+asdf global python 3.10.0
+```
+
+#### Verify Installation
+
+```bash
+python --version
+# Should show Python 3.10.0
+```
+
+### 2. Install Python Dependencies
 
 ```bash
 pip3 install -r requirements_calendar.txt
 ```
 
-### 2. Set Up Google Calendar API Credentials
+**Note for asdf users:** If you're using asdf and installed a different Python version than 3.10.0, update the Python path in `run_launcher.sh` to match your version:
+
+```bash
+# Edit line 8 in run_launcher.sh to match your Python version
+exec "$HOME/.asdf/installs/python/YOUR_VERSION/bin/python3" "$SCRIPT_DIR/calendar_zoom_launcher.py"
+```
+
+### 3. Set Up Google Calendar API Credentials
 
 #### Step 1: Enable the Google Calendar API
 
@@ -41,7 +76,7 @@ pip3 install -r requirements_calendar.txt
 6. Download the JSON file
 7. Rename it to `credentials.json` and place it in this directory
 
-### 3. First Run (Authorization)
+### 4. First Run (Authorization)
 
 Run the script manually for the first time:
 
@@ -57,7 +92,7 @@ This will:
 
 Once authorized, the script will check for upcoming meetings and open any Zoom links found.
 
-### 4. Set Up Automated Execution (macOS)
+### 5. Set Up Automated Execution (macOS)
 
 Run the installation script to automatically configure the launchd agent:
 
