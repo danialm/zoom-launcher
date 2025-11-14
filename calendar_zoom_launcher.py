@@ -118,6 +118,10 @@ def main():
 
     service = get_calendar_service()
 
+    # Get user's email to check their response status
+    calendar_info = service.calendars().get(calendarId='primary').execute()
+    user_email = calendar_info.get('id')
+
     now = datetime.utcnow()
     time_min = (now - timedelta(minutes=5)).isoformat() + 'Z'
     time_max = (now + timedelta(minutes=5)).isoformat() + 'Z'
@@ -154,6 +158,27 @@ def main():
                     continue
             except (ValueError, AttributeError):
                 pass  # If parsing fails, continue with the event
+
+        # Check if user has accepted the invitation
+        attendees = event.get('attendees', [])
+
+        # Skip events with no attendees (personal events)
+        if not attendees:
+            log(f"Skipping (no attendees): {summary} at {start}")
+            continue
+
+        # Find user's response status
+        user_response = None
+        for attendee in attendees:
+            if attendee.get('email', '').lower() == user_email.lower():
+                user_response = attendee.get('responseStatus')
+                break
+
+        # Only proceed if user has explicitly accepted
+        if user_response != 'accepted':
+            status = user_response if user_response else 'no response'
+            log(f"Skipping (not accepted): {summary} at {start} (status: {status})")
+            continue
 
         # Check if already opened (event_id might have timestamp suffix)
         already_opened = any(entry.startswith(event_id) for entry in opened_meetings)

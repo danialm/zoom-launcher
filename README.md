@@ -144,9 +144,13 @@ Restart after code changes:
 2. It looks for events that:
    - Started within the last 5 minutes, OR
    - Will start in the next 5 minutes
-3. If an event has a Zoom link (in location, description, conferenceData, or hangout link), it opens it in your default browser
-4. It tracks which meetings it has already opened to avoid duplicates
-5. The tracking data is automatically cleaned up (entries older than 24 hours are removed)
+3. For each event, it checks:
+   - Does the event have attendees? (Skips personal events with no attendees)
+   - Have you accepted the invitation? (Only opens if your response status is "accepted")
+   - Does the event have a Zoom link? (Checks location, description, conferenceData, or hangout link)
+4. If all conditions are met, it opens the Zoom link in your default browser
+5. It tracks which meetings it has already opened to avoid duplicates
+6. The tracking data is automatically cleaned up (entries older than 24 hours are removed)
 
 ## Troubleshooting
 
