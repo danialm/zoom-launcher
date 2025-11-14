@@ -4,15 +4,24 @@
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Source the user's profile to get their PATH (including asdf, pyenv, etc.)
-# Redirect stderr to suppress shell-specific warnings
-if [ -f "$HOME/.zshrc" ]; then
-    source "$HOME/.zshrc" 2>/dev/null || true
-elif [ -f "$HOME/.bash_profile" ]; then
-    source "$HOME/.bash_profile" 2>/dev/null || true
-elif [ -f "$HOME/.bashrc" ]; then
-    source "$HOME/.bashrc" 2>/dev/null || true
+# Try to find python3 in common locations
+PYTHON=""
+
+# Check common Python manager locations first
+if [ -f "$HOME/.asdf/shims/python3" ]; then
+    PYTHON="$HOME/.asdf/shims/python3"
+elif command -v pyenv &> /dev/null && [ -f "$(pyenv which python3 2>/dev/null)" ]; then
+    PYTHON="$(pyenv which python3)"
+elif [ -f "/opt/homebrew/bin/python3" ]; then
+    PYTHON="/opt/homebrew/bin/python3"
+elif [ -f "/usr/local/bin/python3" ]; then
+    PYTHON="/usr/local/bin/python3"
+elif command -v python3 &> /dev/null; then
+    PYTHON="$(command -v python3)"
+else
+    PYTHON="/usr/bin/python3"
 fi
 
 # Run the Python script
-exec python3 "$SCRIPT_DIR/calendar_zoom_launcher.py" 2>&1
+# Filter out asdf warning notices from stderr while keeping actual errors
+exec "$PYTHON" "$SCRIPT_DIR/calendar_zoom_launcher.py" 2> >(grep -v "NOTICE:\|asdf 0.16.0\|Migration guide\|asdf website\|Source code:" >&2)
