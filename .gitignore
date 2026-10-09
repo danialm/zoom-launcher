@@ -2,8 +2,10 @@
 credentials.json
 token.json
 
-# Meeting tracking file
+# Meeting tracking and synced events cache
 .opened_meetings
+.events_cache.json
+.events_cache.tmp
 
 # Generated plist file (user-specific, generated from template)
 com.calendar.zoom.launcher.plist

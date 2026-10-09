@@ -1,6 +1,6 @@
 # Google Calendar Zoom Launcher Setup
 
-This script automatically checks your Google Calendar every few minutes and opens Zoom links for meetings starting in the next 2 minutes.
+This script syncs your Google Calendar every 15 minutes and opens Zoom or Google Meet links right when your accepted meetings start.
 
 ## Prerequisites
 
@@ -81,7 +81,7 @@ exec "$HOME/.asdf/installs/python/YOUR_VERSION/bin/python3" "$SCRIPT_DIR/calenda
 Run the script manually for the first time:
 
 ```bash
-python3 calendar_zoom_launcher.py
+./run_launcher.sh --auth
 ```
 
 This will:
@@ -90,7 +90,7 @@ This will:
 - Ask you to authorize the application
 - Save a `token.json` file for future use
 
-Once authorized, the script will check for upcoming meetings and open any Zoom links found.
+Run the same command again any time the log says authorization has expired.
 
 ### 5. Set Up Automated Execution (macOS)
 
@@ -140,17 +140,28 @@ Restart after code changes:
 
 ## How It Works
 
-1. Every 2 minutes, the script checks your primary Google Calendar
-2. It looks for events that:
-   - Started within the last 5 minutes, OR
-   - Will start in the next 2 minutes
-3. For each event, it checks:
-   - Does the event have attendees? (Skips personal events with no attendees)
-   - Have you accepted the invitation? (Only opens if your response status is "accepted")
-   - Does the event have a Zoom link? (Checks location, description, conferenceData, or hangout link)
-4. If all conditions are met, it opens the Zoom link in your default browser
-5. It tracks which meetings it has already opened to avoid duplicates
-6. The tracking data is automatically cleaned up (entries older than 24 hours are removed)
+launchd runs the script at the top of every minute. Each run is short-lived:
+
+1. **Sync** (every `SYNC_INTERVAL_MINUTES`, default 15, aligned to the clock: :00, :15, :30, :45; or whenever the cache is missing or older than that, e.g. after the Mac wakes):
+   fetches the rest of today's events (until local midnight) from your primary Google Calendar and saves the ones worth opening to `.events_cache.json`. An event qualifies when:
+   - It has a start time (all-day events are skipped)
+   - It has attendees and you have accepted it
+   - It has a Zoom or Google Meet link (location, description, conferenceData, or hangout link). Zoom is preferred when both are present, since Google Calendar often auto-attaches a Meet link.
+2. **Launch**: any cached meeting that has started within the last 5 minutes and hasn't been opened yet is re-checked with Google (still accepted, not cancelled or moved) and its link is opened in your default browser. If the re-check fails (e.g. offline), the cached link is opened anyway.
+3. Opened meetings are tracked in `.opened_meetings` (entries older than 24 hours are removed) so nothing opens twice.
+
+Minutes that don't sync only read the local cache, so they make no network calls.
+
+Settings at the top of `calendar_zoom_launcher.py` (take effect on the next run, no reinstall needed):
+
+- `SYNC_INTERVAL_MINUTES`: how often to sync (default 15; set to 1 to sync every minute)
+- `LEAD_MINUTES`: open links this many minutes before the meeting starts (default 0)
+
+### Running the tests
+
+```bash
+.venv/bin/python3 -m unittest -v
+```
 
 ## Troubleshooting
 
@@ -168,11 +179,11 @@ chmod +x calendar_zoom_launcher.py
 
 ### Authorization expired
 
-Delete `token.json` and run the script manually again to re-authorize.
+The log will say `Google authorization expired`. Run `./run_launcher.sh --auth` to re-authorize.
 
-### Zoom links not being detected
+### Meeting links not being detected
 
-The script looks for patterns like `https://zoom.us/j/...` or `https://company.zoom.us/j/...`. If your Zoom links have a different format, you may need to adjust the regex patterns in the script.
+The script looks for patterns like `https://zoom.us/j/...`, `https://company.zoom.us/j/...`, or `https://meet.google.com/abc-defg-hij`. If your links have a different format, you may need to adjust the regex patterns in the script.
 
 ### Script not running automatically
 
