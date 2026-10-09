@@ -47,16 +47,29 @@ def get_calendar_service():
     return build('calendar', 'v3', credentials=creds)
 
 
-def extract_zoom_link(text):
-    if not text:
-        return None
+ZOOM_PATTERNS = [
+    r'https://[\w-]+\.zoom\.us/j/[\w?=&.-]+',
+    r'https://zoom\.us/j/[\w?=&.-]+',
+]
 
-    zoom_patterns = [
-        r'https://[\w-]+\.zoom\.us/j/[\w?=&-]+',
-        r'https://zoom\.us/j/[\w?=&-]+',
-    ]
+MEET_PATTERNS = [
+    r'https://meet\.google\.com/[a-z]{3}-[a-z]{4}-[a-z]{3}',
+]
 
-    for pattern in zoom_patterns:
+
+def find_meeting_link(event):
+    """Return a Zoom or Google Meet link for the event, preferring Zoom.
+
+    Google Calendar often auto-attaches a Meet link even when the real
+    meeting is on Zoom, so all sources are searched for Zoom first.
+    """
+    sources = [event.get('location', ''), event.get('description', ''), event.get('hangoutLink', '')]
+    for entry in event.get('conferenceData', {}).get('entryPoints', []):
+        if entry.get('entryPointType') == 'video':
+            sources.append(entry.get('uri', ''))
+    text = '\n'.join(s for s in sources if s)
+
+    for pattern in ZOOM_PATTERNS + MEET_PATTERNS:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
             return match.group(0)
@@ -186,38 +199,16 @@ def main():
             log(f"Already opened: {summary} at {start}")
             continue
 
-        zoom_link = None
+        meeting_link = find_meeting_link(event)
 
-        if 'location' in event:
-            zoom_link = extract_zoom_link(event['location'])
-
-        if not zoom_link and 'description' in event:
-            zoom_link = extract_zoom_link(event['description'])
-
-        if not zoom_link and 'hangoutLink' in event:
-            link = event['hangoutLink']
-            if 'zoom' in link.lower():
-                zoom_link = link
-
-        # Check conferenceData for Zoom meetings added via Google Calendar integration
-        if not zoom_link and 'conferenceData' in event:
-            conference_data = event['conferenceData']
-            if 'entryPoints' in conference_data:
-                for entry in conference_data['entryPoints']:
-                    if entry.get('entryPointType') == 'video':
-                        uri = entry.get('uri', '')
-                        if 'zoom' in uri.lower():
-                            zoom_link = uri
-                            break
-
-        if zoom_link:
-            log(f"Opening Zoom link for: {summary}")
+        if meeting_link:
+            log(f"Opening meeting link for: {summary}")
             log(f"  Time: {start}")
-            log(f"  Link: {zoom_link}")
-            webbrowser.open(zoom_link)
+            log(f"  Link: {meeting_link}")
+            webbrowser.open(meeting_link)
             mark_meeting_opened(event_id)
         else:
-            log(f"Event found but no Zoom link: {summary} at {start}")
+            log(f"Event found but no Zoom/Meet link: {summary} at {start}")
 
 
 if __name__ == '__main__':
