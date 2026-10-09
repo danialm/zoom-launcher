@@ -4,5 +4,8 @@
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Use the specific Python version with Google Calendar dependencies installed
-exec "$HOME/.asdf/installs/python/3.10.0/bin/python3" "$SCRIPT_DIR/calendar_zoom_launcher.py"
+# Prefer a project-local virtualenv; fall back to the asdf Python install
+if [ -x "$SCRIPT_DIR/.venv/bin/python3" ]; then
+    exec "$SCRIPT_DIR/.venv/bin/python3" "$SCRIPT_DIR/calendar_zoom_launcher.py" "$@"
+fi
+exec "$HOME/.asdf/installs/python/3.10.0/bin/python3" "$SCRIPT_DIR/calendar_zoom_launcher.py" "$@"

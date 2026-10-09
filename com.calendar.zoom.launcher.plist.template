@@ -10,8 +10,9 @@
         <string>PROJECT_DIR/run_launcher.sh</string>
     </array>
 
-    <key>StartInterval</key>
-    <integer>120</integer>
+    <!-- An empty dict matches every minute; missed runs during sleep fire once on wake -->
+    <key>StartCalendarInterval</key>
+    <dict/>
 
     <key>StandardOutPath</key>
     <string>/tmp/calendar_zoom_launcher.log</string>
